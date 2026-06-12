@@ -15,7 +15,7 @@ from app import (
 )
 
 
-st.set_page_config(page_title="KET/PET/FCE Reading Lab", page_icon="📘", layout="wide")
+st.set_page_config(page_title="AI Graded Reading Lab", page_icon="📘", layout="wide")
 
 
 BRANCHES = {
@@ -87,6 +87,99 @@ SIX_BRANCHES = [
     },
 ]
 
+STAGES = [
+    {
+        "id": "stage-1",
+        "stage": "Stage 1",
+        "name": "Picture Starter",
+        "age": "6-8",
+        "cefr": "Pre-A1 / A1-",
+        "exam": "YLE Starters bridge",
+        "generator_level": "KET",
+        "color": "#77C8F2",
+        "height": 84,
+        "ability": "看图识词，读懂颜色、地点、人物和动作类短句。",
+        "tasks": "图片线索 / 词义匹配 / True-False",
+        "reader": "一句一图，重复句型，降低第一次阅读压力。",
+        "next": "能稳定读懂短句后，进入 KET Starter。",
+    },
+    {
+        "id": "stage-2",
+        "stage": "Stage 2",
+        "name": "KET Starter",
+        "age": "7-10",
+        "cefr": "A1 / A2-",
+        "exam": "YLE Movers to KET",
+        "generator_level": "KET",
+        "color": "#5AA9F5",
+        "height": 106,
+        "ability": "读懂生活主题小故事，抓住 who / where / what 等事实信息。",
+        "tasks": "词义匹配 / 基础细节题 / 简单选择题",
+        "reader": "短句绘本，主题贴近日常生活和学校场景。",
+        "next": "能完成基础细节题后，进入 KET Reader。",
+    },
+    {
+        "id": "stage-3",
+        "stage": "Stage 3",
+        "name": "KET Reader",
+        "age": "8-11",
+        "cefr": "A2- / A2",
+        "exam": "A2 Key foundation",
+        "generator_level": "KET",
+        "color": "#7BD9C5",
+        "height": 128,
+        "ability": "读完整故事，理解事件顺序、人物目标和基础原因。",
+        "tasks": "选词填空 / 主旨判断 / 句子排序",
+        "reader": "稍长故事，开始训练段落衔接和故事结构。",
+        "next": "能复述故事主线后，进入 PET Builder。",
+    },
+    {
+        "id": "stage-4",
+        "stage": "Stage 4",
+        "name": "PET Builder",
+        "age": "10-13",
+        "cefr": "A2+ / B1-",
+        "exam": "B1 Preliminary bridge",
+        "generator_level": "PET",
+        "color": "#26B99A",
+        "height": 150,
+        "ability": "阅读段落文章，定位细节，并根据上下文推断词义。",
+        "tasks": "信息定位 / 词义推断 / 多选理解",
+        "reader": "从故事过渡到文章，加入观点、比较和解释。",
+        "next": "能解释答案依据后，进入 PET Thinker。",
+    },
+    {
+        "id": "stage-5",
+        "stage": "Stage 5",
+        "name": "PET Thinker",
+        "age": "11-14",
+        "cefr": "B1 / B1+",
+        "exam": "B1 Preliminary",
+        "generator_level": "PET",
+        "color": "#F4C15D",
+        "height": 172,
+        "ability": "理解观点、原因和比较关系，开始形成简短书面表达。",
+        "tasks": "句型转换 / 开放观点 / 对比理解",
+        "reader": "主题文章与故事并行，强调观点表达和句型迁移。",
+        "next": "能完成观点表达后，进入 FCE Explorer。",
+    },
+    {
+        "id": "stage-6",
+        "stage": "Stage 6",
+        "name": "FCE Explorer",
+        "age": "13+",
+        "cefr": "B2-",
+        "exam": "B2 First foundation",
+        "generator_level": "FCE",
+        "color": "#FF8A65",
+        "height": 194,
+        "ability": "阅读更长文本，推断隐含信息，分析文章结构和作者意图。",
+        "tasks": "高阶 cloze / 推断理解 / 写作输出",
+        "reader": "多文体阅读，加入论证、评价和复盘输出。",
+        "next": "适合继续扩展到完整 FCE / B2 备考。",
+    },
+]
+
 
 def inject_css() -> None:
     st.markdown(
@@ -133,6 +226,28 @@ def inject_css() -> None:
           border:1px solid var(--line); border-radius:24px; background:rgba(255,255,255,.88);
           box-shadow: 0 18px 46px -34px rgba(31,92,148,.5);
         }
+        .stage-tower {
+          min-height: 258px; display:flex; flex-direction:column; justify-content:flex-end;
+          padding: 12px 10px; border-radius: 24px; border:1px solid var(--line);
+          background: rgba(255,255,255,.72); box-shadow: 0 16px 42px -36px rgba(31,92,148,.5);
+        }
+        .stage-tower.current { outline: 3px solid rgba(255,111,97,.28); background: rgba(255,255,255,.96); }
+        .stage-bar {
+          border-radius: 18px 18px 10px 10px; display:flex; flex-direction:column; justify-content:flex-end;
+          padding: 12px 10px; color:#fff; text-shadow: 0 1px 10px rgba(23,42,64,.26);
+        }
+        .stage-bar b { font-size: 17px; line-height:1.15; }
+        .stage-bar span { font-size: 12px; font-weight:800; opacity:.94; margin-top:4px; }
+        .stage-foot { padding-top:10px; min-height:70px; }
+        .stage-foot strong { color:var(--ink); font-size:14px; display:block; }
+        .stage-foot small { color:var(--muted); font-weight:800; }
+        .stage-summary {
+          margin: 18px 0 22px; padding: 22px; border-radius: 26px;
+          border:1px solid var(--line); background:linear-gradient(135deg, rgba(255,255,255,.94), rgba(255,247,230,.86));
+          box-shadow: 0 18px 46px -36px rgba(31,92,148,.5);
+        }
+        .stage-summary h3 { margin:0 0 8px; }
+        .stage-summary p { color:var(--muted); line-height:1.75; margin:.35rem 0; }
         .path-card { padding:18px; min-height:128px; }
         .path-card b { font-size:28px; display:block; margin-bottom:4px; }
         .path-card span { color:var(--muted); font-weight:700; }
@@ -203,10 +318,10 @@ def load_streamlit_secrets() -> None:
 def init_state() -> None:
     st.session_state.setdefault("reading", None)
     st.session_state.setdefault("result", None)
-    st.session_state.setdefault("selected_branch", SIX_BRANCHES[0]["name"])
+    st.session_state.setdefault("selected_stage", STAGES[0]["id"])
 
 
-def generate_reading(level: str, mode: str, theme: str | None) -> dict:
+def generate_reading(level: str, mode: str, theme: str | None, stage: dict | None = None) -> dict:
     bridge = LEVEL_BRIDGE[level]
     selected_theme = theme or bridge["themes"][0]
     words = select_words(level, 12)
@@ -227,15 +342,16 @@ def generate_reading(level: str, mode: str, theme: str | None) -> dict:
         "image_url": image["image_url"],
         "image_status": image["image_status"],
         "illustration_prompt": image["illustration_prompt"],
+        "stage_profile": stage,
     }
 
 
-def get_branch(name: str) -> dict:
-    return next(branch for branch in SIX_BRANCHES if branch["name"] == name)
+def get_stage(stage_id: str) -> dict:
+    return next(stage for stage in STAGES if stage["id"] == stage_id)
 
 
-def branch_to_level(branch_name: str) -> str:
-    return branch_name.split(" ", 1)[0]
+def stage_label(stage: dict) -> str:
+    return f"{stage['stage']} · {stage['name']} · {stage['cefr']}"
 
 
 def highlight_words(text: str, words: list[str]) -> str:
@@ -246,44 +362,76 @@ def highlight_words(text: str, words: list[str]) -> str:
 
 
 def render_path() -> None:
-    st.caption("点击任一节点，会自动切换到对应学习分支。")
-    for start in range(0, len(SIX_BRANCHES), 3):
+    st.caption("点击任一节点，会自动切换到对应学习阶段。")
+    for start in range(0, len(STAGES), 3):
         cols = st.columns(3, gap="medium")
-        for col, branch in zip(cols, SIX_BRANCHES[start : start + 3]):
+        for col, stage in zip(cols, STAGES[start : start + 3]):
             with col:
                 if st.button(
-                    f"{branch['name']}\n\n{branch['level']}",
-                    key=f"path-{branch['name']}",
+                    f"{stage['stage']} · {stage['name']}\n\n{stage['cefr']} · Age {stage['age']}",
+                    key=f"path-{stage['id']}",
                     use_container_width=True,
                 ):
-                    st.session_state.selected_branch = branch["name"]
+                    st.session_state.selected_stage = stage["id"]
                     st.rerun()
 
 
-def render_branches() -> None:
-    branch = get_branch(st.session_state.selected_branch)
-    with st.container(border=True):
-        st.markdown(f"### 当前分支：{branch['name']}")
-        st.caption(branch["level"])
-        col1, col2 = st.columns(2)
-        col1.markdown(f"**目标能力**  \n{branch['goal']}")
-        col2.markdown(f"**练习任务**  \n{branch['tasks']}")
+def render_stage_pillars() -> None:
+    cols = st.columns(6, gap="small")
+    for col, stage in zip(cols, STAGES):
+        current = stage["id"] == st.session_state.selected_stage
+        class_name = "stage-tower current" if current else "stage-tower"
+        with col:
+            st.markdown(
+                f"""
+                <div class="{class_name}">
+                  <div class="stage-bar" style="height:{stage['height']}px;background:linear-gradient(180deg,{stage['color']},#ff8a65);">
+                    <b>{stage['stage']}</b>
+                    <span>{stage['cefr']}</span>
+                  </div>
+                  <div class="stage-foot">
+                    <strong>{stage['name']}</strong>
+                    <small>Age {stage['age']}</small>
+                  </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            if st.button("选择", key=f"stage-{stage['id']}", use_container_width=True):
+                st.session_state.selected_stage = stage["id"]
+                st.rerun()
+
+
+def render_stage_summary() -> None:
+    stage = get_stage(st.session_state.selected_stage)
+    st.markdown(
+        f"""
+        <div class="stage-summary">
+          <span class="eyebrow">{stage['exam']} · Age {stage['age']}</span>
+          <h3>{stage['stage']} · {stage['name']}</h3>
+          <p><b>能力目标：</b>{stage['ability']}</p>
+          <p><b>阅读形态：</b>{stage['reader']}</p>
+          <p><b>练习重点：</b>{stage['tasks']}</p>
+          <p><b>下一步：</b>{stage['next']}</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def render_reference_table() -> None:
-    st.markdown("#### 简化分级对照")
-    rows = [
-        ("KET Foundation", "A2", "短句绘本", "词义匹配 / 判断 / 细节题"),
-        ("KET Challenge", "A2+", "稍长故事", "选词填空 / 主旨判断 / 简单句型"),
-        ("PET Foundation", "B1", "段落阅读", "细节定位 / 词汇推断 / 信息定位"),
-        ("PET Challenge", "B1+", "观点阅读", "句型改写 / 比较对照 / 开放观点"),
-        ("FCE Foundation", "B2", "多文体阅读", "推断理解 / 词汇策略 / 段落结构"),
-        ("FCE Challenge", "B2+", "高阶输出", "评价观点 / 写作输出 / 综合复盘"),
-    ]
+    st.markdown("#### 六阶段 / CEFR / 考级桥接对照")
     st.dataframe(
         [
-            {"学习分支": branch, "对应级别": cefr, "阅读形态": reading, "核心练习": tasks}
-            for branch, cefr, reading, tasks in rows
+            {
+                "阶段": f"{stage['stage']} · {stage['name']}",
+                "年龄": stage["age"],
+                "CEFR": stage["cefr"],
+                "考试桥接": stage["exam"],
+                "系统生成等级": stage["generator_level"],
+                "核心练习": stage["tasks"],
+            }
+            for stage in STAGES
         ],
         use_container_width=True,
         hide_index=True,
@@ -295,44 +443,53 @@ def render_home() -> None:
         """
         <div class="hero">
           <span class="eyebrow">AI graded reader studio</span>
-          <h1>分级英语词汇绘本阅读与练习系统</h1>
-          <p>从 KET 到 FCE，围绕目标词汇自动生成英文绘本/阅读文章、真实 AI 插图、专属 Worksheet 和学习复盘报告。</p>
+          <h1>六阶段英语阅读成长地图</h1>
+          <p>从 Pre-A1 图像阅读到 FCE 入门，用能力阶段引导学生一步步生成故事、完成练习，并获得可复盘的学习报告。</p>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
+    st.markdown("### 选择学习阶段")
+    st.caption("六根能力柱代表孩子从看图读短句到高阶文章理解的成长路线。")
+    render_stage_pillars()
+    render_stage_summary()
+
     st.markdown("### 生成工作台")
-    st.caption("先选学习分支，再生成当前分支对应难度的阅读、插图和 Worksheet。")
+    st.caption("确认阶段后，再生成当前阶段对应难度的阅读、插图和 Worksheet。")
     with st.container(border=True):
         col1, col2, col3 = st.columns([1.25, 1, 1.2])
         with col1:
-            branch_options = [branch["name"] for branch in SIX_BRANCHES]
-            branch_name = st.selectbox(
-                "学习分支",
-                branch_options,
-                index=branch_options.index(st.session_state.selected_branch),
+            stage_options = [stage_label(stage) for stage in STAGES]
+            selected_stage = get_stage(st.session_state.selected_stage)
+            stage_choice = st.selectbox(
+                "学习阶段",
+                stage_options,
+                index=STAGES.index(selected_stage),
             )
-            st.session_state.selected_branch = branch_name
-            level = branch_to_level(branch_name)
+            selected_index = stage_options.index(stage_choice)
+            st.session_state.selected_stage = STAGES[selected_index]["id"]
+            selected_stage = STAGES[selected_index]
+            level = selected_stage["generator_level"]
         with col2:
             mode_label = st.selectbox("内容模式", ["绘本故事模式", "标准阅读文章模式"])
             mode = "picture" if mode_label == "绘本故事模式" else "reading"
         with col3:
             theme = st.text_input("主题（可选）", placeholder="如 School life / Animal helpers")
 
-        st.info("选择等级与模式后，系统会同时生成阅读内容、目标词汇高亮、真实绘本插图和随文练习。")
+        st.info(
+            f"当前阶段会使用 {selected_stage['generator_level']} 词汇池生成内容；"
+            f"目标能力是：{selected_stage['ability']}"
+        )
         if st.button("一键生成素材", type="primary"):
             with st.spinner("正在生成阅读、练习和真实配图，生图可能需要 30-90 秒..."):
-                st.session_state.reading = generate_reading(level, mode, theme.strip() or None)
+                st.session_state.reading = generate_reading(level, mode, theme.strip() or None, selected_stage)
                 st.session_state.result = None
             st.rerun()
 
-    render_branches()
-
     st.markdown("### 学习地图")
     st.caption("这部分放在页面底部作为辅助导航，不打断主要生成流程。")
-    with st.expander("展开学习路径：KET Foundation → FCE Challenge", expanded=False):
+    with st.expander("展开六阶段路径", expanded=False):
         render_path()
 
     with st.expander("展开分级对照表（参考资料）", expanded=False):
@@ -346,11 +503,17 @@ def render_reading() -> None:
         return
 
     bridge = reading["bridge"]
+    stage = reading.get("stage_profile")
+    stage_meta = (
+        f"{stage['stage']} · {stage['name']} · {stage['cefr']}"
+        if stage
+        else f"{reading['level']} {bridge['cefr']}"
+    )
     st.markdown(
         f"""
         <div class="story-panel">
           <div class="story-title">{reading['title']}</div>
-          <div class="story-meta">{reading['level']} {bridge['cefr']} · {bridge['stage']} · {bridge['lesson_idea']}</div>
+          <div class="story-meta">{stage_meta} · {bridge['lesson_idea']}</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -366,7 +529,7 @@ def render_reading() -> None:
             st.write(reading["illustration_prompt"])
 
     with text_col:
-        st.markdown("#### Story Reader")
+        st.markdown("#### 分级阅读")
         story_html = "".join(
             f"<p>{highlight_words(paragraph, reading['target_words'])}</p>" for paragraph in reading["paragraphs"]
         )
@@ -383,6 +546,9 @@ def render_exercises() -> None:
         st.info("请先生成阅读。")
         return
 
+    stage = reading.get("stage_profile")
+    if stage:
+        st.caption(f"{stage['stage']} · {stage['name']} 练习重点：{stage['tasks']}")
     st.markdown("## Worksheet 任务卡")
     answers = {}
     for index, ex in enumerate(reading["exercises"], start=1):
@@ -432,7 +598,13 @@ def render_result() -> None:
 
     st.markdown("### 薄弱词汇")
     st.markdown("".join(f"<span class='word-chip'>{word}</span>" for word in result["weakWords"]), unsafe_allow_html=True)
-    st.markdown("<div class='next-step'>下一步建议：先复习薄弱词汇，再重新完成本篇 Worksheet；如果正确率超过 80%，可以切换到 Challenge 分支。</div>", unsafe_allow_html=True)
+    reading = st.session_state.reading
+    stage = reading.get("stage_profile") if reading else None
+    next_step = stage["next"] if stage else "如果正确率超过 80%，可以挑战下一阶段。"
+    st.markdown(
+        f"<div class='next-step'>下一步建议：先复习薄弱词汇，再重新完成本篇 Worksheet；{next_step}</div>",
+        unsafe_allow_html=True,
+    )
 
     st.markdown("### 错题复盘")
     for item in result["details"]:
@@ -446,7 +618,7 @@ inject_css()
 load_streamlit_secrets()
 init_state()
 
-tabs = st.tabs(["首页", "阅读", "练习", "结果"])
+tabs = st.tabs(["阶段生成", "阅读故事", "练习任务", "学习报告"])
 with tabs[0]:
     render_home()
 with tabs[1]:
