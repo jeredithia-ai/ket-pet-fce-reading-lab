@@ -42,6 +42,51 @@ BRANCHES = {
     },
 }
 
+SIX_BRANCHES = [
+    {
+        "name": "KET Foundation",
+        "level": "KET · A2",
+        "color": "#5AA9F5",
+        "goal": "短句绘本、生活主题、图片线索",
+        "tasks": "词义匹配 / True-False / 基础细节题",
+    },
+    {
+        "name": "KET Challenge",
+        "level": "KET · A2+",
+        "color": "#5AA9F5",
+        "goal": "稍长故事、基础阅读理解、简单句型",
+        "tasks": "选词填空 / 主旨判断 / 简单句合并",
+    },
+    {
+        "name": "PET Foundation",
+        "level": "PET · B1",
+        "color": "#26B99A",
+        "goal": "段落阅读、细节定位、词汇推断",
+        "tasks": "阅读选择题 / 词义推断 / 信息定位",
+    },
+    {
+        "name": "PET Challenge",
+        "level": "PET · B1+",
+        "color": "#26B99A",
+        "goal": "观点表达、比较对照、句型改写",
+        "tasks": "句型转换 / 开放观点 / 对比理解",
+    },
+    {
+        "name": "FCE Foundation",
+        "level": "FCE · B2",
+        "color": "#F0A14A",
+        "goal": "多文体阅读、推断题、词汇策略",
+        "tasks": "推断理解 / 词汇策略 / 段落结构",
+    },
+    {
+        "name": "FCE Challenge",
+        "level": "FCE · B2+",
+        "color": "#F0A14A",
+        "goal": "评价观点、论证表达、写作输出",
+        "tasks": "观点评价 / 写作输出 / 高阶复盘",
+    },
+]
+
 
 def inject_css() -> None:
     st.markdown(
@@ -215,15 +260,15 @@ def render_path() -> None:
 
 
 def render_branches() -> None:
-    cols = st.columns(3, gap="medium")
-    for col, (level, item) in zip(cols, BRANCHES.items()):
-        with col:
-            with st.container(border=True):
-                st.markdown(f"### {level} · {item['cefr']}")
-                st.markdown("**Foundation**")
-                st.write(item["foundation"])
-                st.markdown("**Challenge**")
-                st.write(item["challenge"])
+    for start in range(0, len(SIX_BRANCHES), 3):
+        cols = st.columns(3, gap="medium")
+        for col, branch in zip(cols, SIX_BRANCHES[start : start + 3]):
+            with col:
+                with st.container(border=True):
+                    st.markdown(f"### {branch['name']}")
+                    st.caption(branch["level"])
+                    st.markdown(f"**目标能力**：{branch['goal']}")
+                    st.markdown(f"**练习任务**：{branch['tasks']}")
 
 
 def render_home() -> None:
@@ -241,32 +286,27 @@ def render_home() -> None:
     st.markdown("### 主路径：KET → PET → FCE")
     render_path()
     st.markdown("### 六个学习分支")
+    st.caption("每个主等级拆成 Foundation / Challenge 两条路径，学生可以从基础理解逐步过渡到输出表达。")
     render_branches()
 
     st.markdown("### 生成工作台")
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        level = st.selectbox("考级等级", ["KET", "PET", "FCE"])
-    with col2:
-        mode_label = st.selectbox("内容模式", ["绘本故事模式", "标准阅读文章模式"])
-        mode = "picture" if mode_label == "绘本故事模式" else "reading"
-    with col3:
-        theme = st.text_input("主题（可选）", placeholder="如 School life / Animal helpers")
+    st.caption("先看清路径，再生成当前等级的阅读、插图和 Worksheet。")
+    with st.container(border=True):
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            level = st.selectbox("考级等级", ["KET", "PET", "FCE"])
+        with col2:
+            mode_label = st.selectbox("内容模式", ["绘本故事模式", "标准阅读文章模式"])
+            mode = "picture" if mode_label == "绘本故事模式" else "reading"
+        with col3:
+            theme = st.text_input("主题（可选）", placeholder="如 School life / Animal helpers")
 
-    st.markdown(
-        """
-        <div class="pullout">
-          <b>生成路径</b>
-          <span>选择等级与模式后，系统会同时生成阅读内容、目标词汇高亮、真实绘本插图和随文练习。</span>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    if st.button("一键生成素材", type="primary"):
-        with st.spinner("正在生成阅读、练习和真实配图，生图可能需要 30-90 秒..."):
-            st.session_state.reading = generate_reading(level, mode, theme.strip() or None)
-            st.session_state.result = None
-        st.rerun()
+        st.info("选择等级与模式后，系统会同时生成阅读内容、目标词汇高亮、真实绘本插图和随文练习。")
+        if st.button("一键生成素材", type="primary"):
+            with st.spinner("正在生成阅读、练习和真实配图，生图可能需要 30-90 秒..."):
+                st.session_state.reading = generate_reading(level, mode, theme.strip() or None)
+                st.session_state.result = None
+            st.rerun()
 
 
 def render_reading() -> None:
