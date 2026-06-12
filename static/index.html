@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="KET/PET/FCE 分级词汇绘本阅读、Worksheet 自动生成与在线自测系统"
+    />
+    <title>KET/PET/FCE 分级英语词汇绘本阅读与练习系统</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div>
+          <div class="brand">Vocabulary Story Lab</div>
+          <p>KET / PET / FCE 分级阅读 + Worksheet + 自测复盘</p>
+        </div>
+        <nav>
+          <button data-jump="home" class="nav-btn active">首页</button>
+          <button data-jump="reading" class="nav-btn locked" title="生成阅读后解锁">阅读</button>
+          <button data-jump="exercise" class="nav-btn locked" title="生成阅读后解锁">练习</button>
+          <button data-jump="result" class="nav-btn locked" title="提交批改后解锁">结果</button>
+        </nav>
+      </header>
+
+      <main>
+        <section id="home" class="page active">
+          <div class="hero-card">
+            <div class="hero-copy">
+              <span class="eyebrow">AI vocabulary-driven reading engine</span>
+              <h1>分级英语词汇绘本阅读与练习系统</h1>
+              <p>
+                根据 KET / PET / FCE 目标词汇，一键生成对应难度的英文绘本故事或考级阅读文章，
+                并自动配套专属 Worksheet、在线批改和错题复盘。
+              </p>
+              <div class="controls">
+                <label>
+                  考级等级
+                  <select id="level">
+                    <option>KET</option>
+                    <option>PET</option>
+                    <option>FCE</option>
+                  </select>
+                </label>
+                <label>
+                  内容模式
+                  <select id="mode">
+                    <option value="picture">绘本故事模式</option>
+                    <option value="reading">标准阅读文章模式</option>
+                  </select>
+                </label>
+                <label>
+                  主题（可选）
+                  <input id="theme" placeholder="如 Animal helpers / Healthy choices" />
+                </label>
+              </div>
+              <button id="generateBtn" class="primary">一键生成素材</button>
+            </div>
+            <aside class="learning-map">
+              <h2>KET / PET / FCE 等级匹配图</h2>
+              <p class="map-note">前台只保留考级主线；课程大纲只作为阅读任务和练习设计参考。</p>
+              <div class="level-chart">
+                <div class="chart-row ket">
+                  <b>KET</b>
+                  <span>A2 · 基础阅读</span>
+                  <small>短句绘本 / 生活主题 / 图片线索 / 词义匹配</small>
+                </div>
+                <div class="chart-row pet">
+                  <b>PET</b>
+                  <span>B1 · 进阶阅读</span>
+                  <small>段落阅读 / 观点表达 / 比较对照 / 句型改写</small>
+                </div>
+                <div class="chart-row fce">
+                  <b>FCE</b>
+                  <span>B2 · 高阶阅读</span>
+                  <small>多文体阅读 / 推断评价 / 词汇策略 / 写作输出</small>
+                </div>
+              </div>
+              <div class="stage-line">
+                <span>KET Foundation</span>
+                <span>KET Challenge</span>
+                <span>PET Foundation</span>
+                <span>PET Challenge</span>
+                <span>FCE Foundation</span>
+                <span>FCE Challenge</span>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="reading" class="page">
+          <div class="reading-layout">
+            <article class="reader">
+              <div class="reader-head">
+                <span id="readingLevel" class="pill">KET</span>
+                <span id="readingMode" class="pill soft">绘本故事</span>
+              </div>
+              <h1 id="readingTitle">等待生成阅读内容</h1>
+              <p id="bridgeText" class="bridge"></p>
+              <div id="illustration" class="illustration">
+                <span>AI 配图占位</span>
+              </div>
+              <div id="paragraphs" class="paragraphs">
+                <p>请选择等级和模式，然后点击“一键生成素材”。</p>
+              </div>
+              <button id="startExercise" class="primary disabled">开始配套练习</button>
+            </article>
+            <aside class="word-panel">
+              <h2>本篇核心词汇</h2>
+              <div id="wordBank" class="word-bank"></div>
+              <h3>配图 Prompt</h3>
+              <p id="imagePrompt" class="prompt-text">生成后显示。</p>
+            </aside>
+          </div>
+        </section>
+
+        <section id="exercise" class="page">
+          <div class="section-title">
+            <h1>Worksheet 专属练习</h1>
+            <span>随文动态生成，不是固定题库</span>
+          </div>
+          <form id="exerciseForm" class="exercise-list"></form>
+          <button id="submitBtn" class="primary disabled">提交批改</button>
+        </section>
+
+        <section id="result" class="page">
+          <div class="result-card">
+            <div class="score-ring">
+              <span id="percent">--%</span>
+              <small>正确率</small>
+            </div>
+            <div>
+              <h1 id="rating">等待提交</h1>
+              <p id="scoreText">完成练习后，这里会显示得分、评级与错题复盘。</p>
+            </div>
+          </div>
+          <div class="review-grid">
+            <section>
+              <h2>错题复盘</h2>
+              <div id="reviewList" class="review-list"></div>
+            </section>
+            <section>
+              <h2>薄弱词汇</h2>
+              <div id="weakWords" class="word-bank"></div>
+            </section>
+          </div>
+          <div class="result-actions">
+            <button id="retryBtn" class="secondary">重新练习</button>
+            <button id="newBtn" class="primary">生成新一篇阅读</button>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script src="/static/app.js"></script>
+  </body>
+</html>
