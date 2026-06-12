@@ -203,6 +203,7 @@ def load_streamlit_secrets() -> None:
 def init_state() -> None:
     st.session_state.setdefault("reading", None)
     st.session_state.setdefault("result", None)
+    st.session_state.setdefault("selected_branch", SIX_BRANCHES[0]["name"])
 
 
 def generate_reading(level: str, mode: str, theme: str | None) -> dict:
@@ -229,6 +230,14 @@ def generate_reading(level: str, mode: str, theme: str | None) -> dict:
     }
 
 
+def get_branch(name: str) -> dict:
+    return next(branch for branch in SIX_BRANCHES if branch["name"] == name)
+
+
+def branch_to_level(branch_name: str) -> str:
+    return branch_name.split(" ", 1)[0]
+
+
 def highlight_words(text: str, words: list[str]) -> str:
     output = text
     for word in sorted(words, key=len, reverse=True):
@@ -237,38 +246,48 @@ def highlight_words(text: str, words: list[str]) -> str:
 
 
 def render_path() -> None:
-    cols = st.columns([1, 0.12, 1, 0.12, 1], gap="medium")
-    with cols[0]:
-        with st.container(border=True):
-            st.markdown("### KET")
-            st.caption("A2 · 主路径")
-            st.write(BRANCHES["KET"]["output"])
-    with cols[1]:
-        st.markdown("### →")
-    with cols[2]:
-        with st.container(border=True):
-            st.markdown("### PET")
-            st.caption("B1 · 主路径")
-            st.write(BRANCHES["PET"]["output"])
-    with cols[3]:
-        st.markdown("### →")
-    with cols[4]:
-        with st.container(border=True):
-            st.markdown("### FCE")
-            st.caption("B2 · 主路径")
-            st.write(BRANCHES["FCE"]["output"])
-
-
-def render_branches() -> None:
+    st.caption("点击任一节点，会自动切换到对应学习分支。")
     for start in range(0, len(SIX_BRANCHES), 3):
         cols = st.columns(3, gap="medium")
         for col, branch in zip(cols, SIX_BRANCHES[start : start + 3]):
             with col:
-                with st.container(border=True):
-                    st.markdown(f"### {branch['name']}")
-                    st.caption(branch["level"])
-                    st.markdown(f"**目标能力**：{branch['goal']}")
-                    st.markdown(f"**练习任务**：{branch['tasks']}")
+                if st.button(
+                    f"{branch['name']}\n\n{branch['level']}",
+                    key=f"path-{branch['name']}",
+                    use_container_width=True,
+                ):
+                    st.session_state.selected_branch = branch["name"]
+                    st.rerun()
+
+
+def render_branches() -> None:
+    branch = get_branch(st.session_state.selected_branch)
+    with st.container(border=True):
+        st.markdown(f"### 当前分支：{branch['name']}")
+        st.caption(branch["level"])
+        col1, col2 = st.columns(2)
+        col1.markdown(f"**目标能力**  \n{branch['goal']}")
+        col2.markdown(f"**练习任务**  \n{branch['tasks']}")
+
+
+def render_reference_table() -> None:
+    st.markdown("#### 简化分级对照")
+    rows = [
+        ("KET Foundation", "A2", "短句绘本", "词义匹配 / 判断 / 细节题"),
+        ("KET Challenge", "A2+", "稍长故事", "选词填空 / 主旨判断 / 简单句型"),
+        ("PET Foundation", "B1", "段落阅读", "细节定位 / 词汇推断 / 信息定位"),
+        ("PET Challenge", "B1+", "观点阅读", "句型改写 / 比较对照 / 开放观点"),
+        ("FCE Foundation", "B2", "多文体阅读", "推断理解 / 词汇策略 / 段落结构"),
+        ("FCE Challenge", "B2+", "高阶输出", "评价观点 / 写作输出 / 综合复盘"),
+    ]
+    st.dataframe(
+        [
+            {"学习分支": branch, "对应级别": cefr, "阅读形态": reading, "核心练习": tasks}
+            for branch, cefr, reading, tasks in rows
+        ],
+        use_container_width=True,
+        hide_index=True,
+    )
 
 
 def render_home() -> None:
@@ -283,18 +302,19 @@ def render_home() -> None:
         unsafe_allow_html=True,
     )
 
-    st.markdown("### 主路径：KET → PET → FCE")
-    render_path()
-    st.markdown("### 六个学习分支")
-    st.caption("每个主等级拆成 Foundation / Challenge 两条路径，学生可以从基础理解逐步过渡到输出表达。")
-    render_branches()
-
     st.markdown("### 生成工作台")
-    st.caption("先看清路径，再生成当前等级的阅读、插图和 Worksheet。")
+    st.caption("先选学习分支，再生成当前分支对应难度的阅读、插图和 Worksheet。")
     with st.container(border=True):
-        col1, col2, col3 = st.columns(3)
+        col1, col2, col3 = st.columns([1.25, 1, 1.2])
         with col1:
-            level = st.selectbox("考级等级", ["KET", "PET", "FCE"])
+            branch_options = [branch["name"] for branch in SIX_BRANCHES]
+            branch_name = st.selectbox(
+                "学习分支",
+                branch_options,
+                index=branch_options.index(st.session_state.selected_branch),
+            )
+            st.session_state.selected_branch = branch_name
+            level = branch_to_level(branch_name)
         with col2:
             mode_label = st.selectbox("内容模式", ["绘本故事模式", "标准阅读文章模式"])
             mode = "picture" if mode_label == "绘本故事模式" else "reading"
@@ -307,6 +327,16 @@ def render_home() -> None:
                 st.session_state.reading = generate_reading(level, mode, theme.strip() or None)
                 st.session_state.result = None
             st.rerun()
+
+    render_branches()
+
+    st.markdown("### 学习地图")
+    st.caption("这部分放在页面底部作为辅助导航，不打断主要生成流程。")
+    with st.expander("展开学习路径：KET Foundation → FCE Challenge", expanded=False):
+        render_path()
+
+    with st.expander("展开分级对照表（参考资料）", expanded=False):
+        render_reference_table()
 
 
 def render_reading() -> None:
