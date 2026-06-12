@@ -191,47 +191,39 @@ def highlight_words(text: str, words: list[str]) -> str:
     return output
 
 
-def path_card(level: str) -> str:
-    item = BRANCHES[level]
-    return f"""
-    <div class="path-card">
-      <b style="color:{item['color']}">{level}</b>
-      <span>{item['cefr']} · 主路径</span>
-      <small>{item['output']}</small>
-    </div>
-    """
-
-
 def render_path() -> None:
-    st.markdown(
-        f"""
-        <div class="path">
-          {path_card("KET")}
-          <div class="arrow">→</div>
-          {path_card("PET")}
-          <div class="arrow">→</div>
-          {path_card("FCE")}
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    cols = st.columns([1, 0.12, 1, 0.12, 1], gap="medium")
+    with cols[0]:
+        with st.container(border=True):
+            st.markdown("### KET")
+            st.caption("A2 · 主路径")
+            st.write(BRANCHES["KET"]["output"])
+    with cols[1]:
+        st.markdown("### →")
+    with cols[2]:
+        with st.container(border=True):
+            st.markdown("### PET")
+            st.caption("B1 · 主路径")
+            st.write(BRANCHES["PET"]["output"])
+    with cols[3]:
+        st.markdown("### →")
+    with cols[4]:
+        with st.container(border=True):
+            st.markdown("### FCE")
+            st.caption("B2 · 主路径")
+            st.write(BRANCHES["FCE"]["output"])
 
 
 def render_branches() -> None:
-    cards = []
-    for level, item in BRANCHES.items():
-        cards.append(
-            f"""
-            <div class="branch-card">
-              <h3 style="color:{item['color']}">{level} · {item['cefr']}</h3>
-              <span class="pill">Foundation</span>
-              <p>{item['foundation']}</p>
-              <span class="pill">Challenge</span>
-              <p>{item['challenge']}</p>
-            </div>
-            """
-        )
-    st.markdown(f"<div class='branch-grid'>{''.join(cards)}</div>", unsafe_allow_html=True)
+    cols = st.columns(3, gap="medium")
+    for col, (level, item) in zip(cols, BRANCHES.items()):
+        with col:
+            with st.container(border=True):
+                st.markdown(f"### {level} · {item['cefr']}")
+                st.markdown("**Foundation**")
+                st.write(item["foundation"])
+                st.markdown("**Challenge**")
+                st.write(item["challenge"])
 
 
 def render_home() -> None:
@@ -251,7 +243,7 @@ def render_home() -> None:
     st.markdown("### 六个学习分支")
     render_branches()
 
-    st.markdown("<div class='form-card'>", unsafe_allow_html=True)
+    st.markdown("### 生成工作台")
     col1, col2, col3 = st.columns(3)
     with col1:
         level = st.selectbox("考级等级", ["KET", "PET", "FCE"])
@@ -275,7 +267,6 @@ def render_home() -> None:
             st.session_state.reading = generate_reading(level, mode, theme.strip() or None)
             st.session_state.result = None
         st.rerun()
-    st.markdown("</div>", unsafe_allow_html=True)
 
 
 def render_reading() -> None:
